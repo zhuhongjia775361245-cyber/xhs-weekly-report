@@ -458,7 +458,81 @@ def generate_topic_suggestions(all_notes: list, collect_rate: float, like_rate: 
     return rows_html
 
 
-def _analyze_single_note(note: dict, tracking_snapshots: list) -> dict:
+def _build_weekly_trend_chart(snapshots: list) -> str:
+    """
+    把快照数据按周汇总，生成柱状图 HTML。
+    输入: [{date, views, likes, ...}, ...]
+    输出: HTML 柱状图字符串
+    """
+    if not snapshots:
+        return ""
+
+    # 按日期排序
+    sorted_snaps = sorted(snapshots, key=lambda x: x.get("date", ""))
+
+    # 按周（周一为起点）分组
+    weeks = {}
+    for snap in sorted_snaps:
+        date_str = snap.get("date", "")
+        try:
+            dt = datetime.datetime.strptime(date_str, "%Y-%m-%d")
+            monday = dt - datetime.timedelta(days=dt.weekday())
+            wk = monday.strftime("%m/%d")
+        except:
+            wk = date_str[:7]
+        weeks.setdefault(wk, {"views": 0, "likes": 0, "collects": 0})
+        weeks[wk]["views"]    += int(snap.get("views", 0) or 0)
+        weeks[wk]["likes"]    += int(snap.get("likes", 0) or 0)
+        weeks[wk]["collects"] += int(snap.get("collects", 0) or 0)
+
+    week_keys = sorted(weeks.keys())
+    if len(week_keys) <= 1:
+        # 只有一周：拆成每日柱
+        bars_html = ""
+        for snap in sorted_snaps[-7:]:  # 最多显示最近7天
+            v = int(snap.get("views", 0) or 0)
+            date_lbl = snap.get("date", "")[5:]  # MM-DD
+            bar_w = min(v / max(weeks[week_keys[0]]["views"], 1) * 100, 100) if weeks else 0
+            bars_html += f"""
+                <div class="wt-bar-wrap" title="{date_lbl} 浏览{v}">
+                    <div class="wt-bar" style="height:{bar_w}%"></div>
+                    <div class="wt-lbl">{date_lbl[2:]}</div>
+                </div>"""
+        header_lbl = "每日趋势"
+    else:
+        # 多周：按周柱
+        max_views = max(w["views"] for w in weeks.values()) or 1
+        bars_html = ""
+        for wk in week_keys:
+            v = weeks[wk]["views"]
+            bar_h = int(v / max_views * 100)
+            delta = ""
+            idx = week_keys.index(wk)
+            if idx > 0:
+                prev = weeks[week_keys[idx - 1]]["views"]
+                diff = v - prev
+                if diff > 0:
+                    delta = f'<span class="wt-delta up">+{diff}</span>'
+                elif diff < 0:
+                    delta = f'<span class="wt-delta dn">{diff}</span>'
+            bars_html += f"""
+                <div class="wt-bar-wrap" title="{wk} 浏览{v}">
+                    <div class="wt-bar" style="height:{bar_h}%"></div>
+                    <div class="wt-lbl">{wk.split('/')[1]}</div>
+                    {delta}
+                </div>"""
+        header_lbl = "周趋势"
+
+    return f"""
+    <div class="note-trend">
+        <div class="trend-header">{header_lbl}
+            <span class="trend-hint">柱高=浏览量</span>
+        </div>
+        <div class="trend-bars">{bars_html}</div>
+    </div>"""
+
+
+def _analyze_single_note(note: dict, tracking_snapshots: list) -> str:
     """
     对单篇笔记进行数据分析，返回诊断结果。
     """
@@ -639,6 +713,7 @@ def _analyze_single_note(note: dict, tracking_snapshots: list) -> dict:
                     <div class="metric-label">转发</div>
                 </div>
             </div>
+            {_build_weekly_trend_chart(tracking_snapshots)}
             <div class="note-diag">
                 <div class="note-verdict">
                     <span class="verdict-badge {eng_class}">{verdict}</span>
@@ -664,12 +739,13 @@ def generate_content_diagnosis(recent_notes: list, all_notes: list = None, track
         return '<div class="no-data">暂无数据</div>'
 
     # 加载追踪数据
-    tracking = tracking or {}
     if tracking is None:
         tp = DATA_DIR / "note_tracking.json"
         if tp.exists():
             with open(tp, encoding="utf-8") as f:
                 tracking = json.load(f)
+        else:
+            tracking = {}
 
     # 按互动率排序后逐篇生成分析卡片
     scored = []
@@ -912,6 +988,21 @@ def generate_html(data: dict, prev_data: dict = None) -> str:
   .diag-summary-bar .diag-stat-item:last-child {{ border-right: none; }}
   .diag-summary-bar .diag-stat-label {{ display: block; font-size: 11px; color: #999; margin-bottom: 4px; }}
   .diag-summary-bar .diag-stat-value {{ display: block; font-size: 16px; font-weight: 700; }}
+
+  /* 周趋势柱状图 */
+  .note-trend {{ margin-top: 12px; padding-top: 12px; border-top: 1px dashed #f0f0f0; }}
+  .trend-header {{ display: flex; justify-content: space-between; align-items: center;
+                   font-size: 11px; color: #999; margin-bottom: 8px; }}
+  .trend-hint {{ font-size: 10px; color: #ccc; }}
+  .trend-bars {{ display: flex; align-items: flex-end; gap: 6px; height: 52px; }}
+  .wt-bar-wrap {{ flex: 1; display: flex; flex-direction: column; align-items: center;
+                  justify-content: flex-end; height: 100%; cursor: default; position: relative; }}
+  .wt-bar {{ width: 100%; background: linear-gradient(180deg, #ff6b81 0%, #ff2442 100%);
+              border-radius: 3px 3px 0 0; min-height: 3px; transition: height 0.3s; }}
+  .wt-lbl {{ font-size: 10px; color: #bbb; margin-top: 3px; }}
+  .wt-delta {{ position: absolute; top: -14px; font-size: 10px; font-weight: 600; width: 100%; text-align: center; }}
+  .wt-delta.up {{ color: #e74c3c; }}
+  .wt-delta.dn {{ color: #6ab04c; }}
 
   @media (max-width: 768px) {{
     .overview {{ grid-template-columns: repeat(2, 1fr); }}

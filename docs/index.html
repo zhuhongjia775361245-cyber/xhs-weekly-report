@@ -140,6 +140,21 @@
   .diag-summary-bar .diag-stat-label { display: block; font-size: 11px; color: #999; margin-bottom: 4px; }
   .diag-summary-bar .diag-stat-value { display: block; font-size: 16px; font-weight: 700; }
 
+  /* 周趋势柱状图 */
+  .note-trend { margin-top: 12px; padding-top: 12px; border-top: 1px dashed #f0f0f0; }
+  .trend-header { display: flex; justify-content: space-between; align-items: center;
+                   font-size: 11px; color: #999; margin-bottom: 8px; }
+  .trend-hint { font-size: 10px; color: #ccc; }
+  .trend-bars { display: flex; align-items: flex-end; gap: 6px; height: 52px; }
+  .wt-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center;
+                  justify-content: flex-end; height: 100%; cursor: default; position: relative; }
+  .wt-bar { width: 100%; background: linear-gradient(180deg, #ff6b81 0%, #ff2442 100%);
+              border-radius: 3px 3px 0 0; min-height: 3px; transition: height 0.3s; }
+  .wt-lbl { font-size: 10px; color: #bbb; margin-top: 3px; }
+  .wt-delta { position: absolute; top: -14px; font-size: 10px; font-weight: 600; width: 100%; text-align: center; }
+  .wt-delta.up { color: #e74c3c; }
+  .wt-delta.dn { color: #6ab04c; }
+
   @media (max-width: 768px) {
     .overview { grid-template-columns: repeat(2, 1fr); }
     .diag-cards { grid-template-columns: 1fr; }
@@ -232,6 +247,7 @@
                     <div class="metric-label">转发</div>
                 </div>
             </div>
+            
             <div class="note-diag">
                 <div class="note-verdict">
                     <span class="verdict-badge eng-high">高互动优质内容</span>
@@ -302,6 +318,7 @@
                     <div class="metric-label">转发</div>
                 </div>
             </div>
+            
             <div class="note-diag">
                 <div class="note-verdict">
                     <span class="verdict-badge eng-mid">表现中等</span>
@@ -372,6 +389,7 @@
                     <div class="metric-label">转发</div>
                 </div>
             </div>
+            
             <div class="note-diag">
                 <div class="note-verdict">
                     <span class="verdict-badge eng-low">整体偏弱</span>
