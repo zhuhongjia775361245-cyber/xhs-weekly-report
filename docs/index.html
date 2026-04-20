@@ -25,34 +25,6 @@
   .section-title { font-size: 16px; font-weight: 600; margin-bottom: 18px;
                     border-left: 4px solid #ff2442; padding-left: 10px; color: #222; }
 
-  /* 周统计卡片 */
-  .weeks-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; }
-  .week-card { background: #fff9fa; border-radius: 12px; padding: 18px; border: 1px solid #ffe0e5; }
-  .week-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
-  .week-label { font-size: 13px; font-weight: 600; }
-  .week-count { background: #ffe0e5; color: #ff2442; padding: 2px 8px; border-radius: 8px; font-size: 11px; }
-  .week-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px; }
-  .stat-item { text-align: center; }
-  .stat-value { font-size: 16px; font-weight: 700; color: #ff2442; display: block; }
-  .stat-label { font-size: 11px; color: #999; }
-  .week-avg { font-size: 11px; color: #888; display: flex; justify-content: space-around; }
-
-  /* 笔记详情表 */
-  .week-section { margin-bottom: 20px; }
-  .week-section-header { display: flex; justify-content: space-between; align-items: center;
-                           margin-bottom: 12px; padding-bottom: 10px; border-bottom: 2px solid #ffe0e5; }
-  .week-title { font-size: 14px; font-weight: 600; }
-  .week-summary { font-size: 12px; color: #ff2442; }
-  table.notes-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th { background: #fff5f7; color: #ff2442; font-weight: 600; padding: 10px 10px;
-       text-align: left; border-bottom: 2px solid #ffe0e5; white-space: nowrap; }
-  td { padding: 10px 10px; border-bottom: 1px solid #f5f5f5; vertical-align: middle; }
-  tr:hover td { background: #fff9fa; }
-  .note-title { max-width: 280px; color: #333; line-height: 1.4; }
-  .rank { font-size: 15px; text-align: center; }
-  .num { color: #555; text-align: right; white-space: nowrap; }
-  .date { color: #aaa; font-size: 12px; white-space: nowrap; }
-
   /* 互动率颜色 */
   .eng-high { color: #22c55e; font-weight: 700; }
   .eng-mid  { color: #f59e0b; font-weight: 600; }
@@ -65,11 +37,6 @@
   .tag-slow { background: #fefce8; color: #ca8a04; }
   .tag-flat { background: #f1f5f9; color: #94a3b8; }
   .tag-new  { background: #eff6ff; color: #3b82f6; }
-
-  /* 横向对比进度条 */
-  .bar-wrap { background: #f1f5f9; border-radius: 4px; height: 6px; min-width: 80px; margin-bottom: 3px; }
-  .bar { background: linear-gradient(90deg, #ff2442, #ff6b81); border-radius: 4px; height: 6px; }
-  .bar-num { font-size: 12px; color: #666; }
 
   /* 内容诊断 */
   .diag-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
@@ -175,7 +142,6 @@
 
   @media (max-width: 768px) {
     .overview { grid-template-columns: repeat(2, 1fr); }
-    .weeks-grid { grid-template-columns: 1fr; }
     .diag-cards { grid-template-columns: 1fr; }
     .diag-stats { grid-template-columns: repeat(2, 1fr); }
     .header { padding: 24px 20px; }
@@ -200,101 +166,9 @@
     <div class="overview-item"><div class="value eng-mid">3.4%</div><div class="label">综合互动率</div></div>
   </div>
 
-  <!-- 按周统计 -->
+  <!-- 单篇笔记分析 -->
   <div class="section">
-    <div class="section-title">📊 按周统计</div>
-    <div class="weeks-grid">
-        <div class="week-card">
-            <div class="week-header">
-                <span class="week-label">📅 04/06 - 04/12</span>
-                <span class="week-count">2 篇</span>
-            </div>
-            <div class="week-stats">
-                <div class="stat-item"><span class="stat-value">280</span><span class="stat-label">浏览</span></div>
-                <div class="stat-item"><span class="stat-value">6</span><span class="stat-label">点赞</span></div>
-                <div class="stat-item"><span class="stat-value">0</span><span class="stat-label">收藏</span></div>
-                <div class="stat-item"><span class="stat-value">2</span><span class="stat-label">评论</span></div>
-            </div>
-            <div class="week-avg">
-                <span>篇均浏览 140</span>
-                <span>互动率 2.9%</span>
-            </div>
-        </div>
-        <div class="week-card">
-            <div class="week-header">
-                <span class="week-label">📅 04/13 - 04/19</span>
-                <span class="week-count">1 篇</span>
-            </div>
-            <div class="week-stats">
-                <div class="stat-item"><span class="stat-value">43</span><span class="stat-label">浏览</span></div>
-                <div class="stat-item"><span class="stat-value">3</span><span class="stat-label">点赞</span></div>
-                <div class="stat-item"><span class="stat-value">0</span><span class="stat-label">收藏</span></div>
-                <div class="stat-item"><span class="stat-value">0</span><span class="stat-label">评论</span></div>
-            </div>
-            <div class="week-avg">
-                <span>篇均浏览 43</span>
-                <span>互动率 7.0%</span>
-            </div>
-        </div></div>
-  </div>
-
-  <!-- 横向对比 -->
-  <div class="section">
-    <div class="section-title">🏆 笔记横向对比（按互动率排序）</div>
-    
-    <table class="notes-table">
-        <thead><tr>
-            <th style="width:40px">排名</th>
-            <th>标题</th>
-            <th>浏览量</th>
-            <th style="text-align:right">点赞</th>
-            <th style="text-align:right">收藏</th>
-            <th style="text-align:right">互动率</th>
-            <th>发布时间</th>
-        </tr></thead>
-        <tbody>
-        <tr>
-            <td class="rank">🥇</td>
-            <td class="note-title">晚上总醒，可能晚餐吃错，营养师的助眠食谱</td>
-            <td>
-                <div class="bar-wrap"><div class="bar" style="width:22%"></div></div>
-                <span class="bar-num">43</span>
-            </td>
-            <td class="num">3</td>
-            <td class="num">0</td>
-            <td class="num"><span class="eng-high">7.0%</span></td>
-            <td class="date">发布 5 天</td>
-        </tr>
-        <tr>
-            <td class="rank">🥈</td>
-            <td class="note-title">脸色暗沉？可能是脾胃不和导致，3个调理法</td>
-            <td>
-                <div class="bar-wrap"><div class="bar" style="width:100%"></div></div>
-                <span class="bar-num">194</span>
-            </td>
-            <td class="num">5</td>
-            <td class="num">0</td>
-            <td class="num"><span class="eng-mid">3.6%</span></td>
-            <td class="date">发布 11 天</td>
-        </tr>
-        <tr>
-            <td class="rank">🥉</td>
-            <td class="note-title">一人掌管全家胃：如何给老人控糖给孩子补脑</td>
-            <td>
-                <div class="bar-wrap"><div class="bar" style="width:44%"></div></div>
-                <span class="bar-num">86</span>
-            </td>
-            <td class="num">1</td>
-            <td class="num">0</td>
-            <td class="num"><span class="eng-low">1.2%</span></td>
-            <td class="date">发布 8 天</td>
-        </tr></tbody>
-    </table>
-  </div>
-
-  <!-- 内容诊断 -->
-  <div class="section">
-    <div class="section-title">🔍 内容诊断 & 选题建议</div>
+    <div class="section-title">📊 单篇笔记分析</div>
     
     <div class="diag-summary-bar">
         <div class="diag-stat-item">
@@ -639,90 +513,6 @@
         </div>
         </div>
     </div>
-  </div>
-
-  <!-- 按篇详情 -->
-  <div class="section">
-    <div class="section-title">📝 每篇详情（含互动率 & 涨势）</div>
-    
-        <div class="week-section">
-            <div class="week-section-header">
-                <span class="week-title">📆 04/13 - 04/19</span>
-                <span class="week-summary">共 1 篇 | 浏览 43 | 点赞 3</span>
-            </div>
-            <table class="notes-table">
-                <thead><tr>
-                    <th>标题</th>
-                    <th style="text-align:right">浏览</th>
-                    <th style="text-align:right">点赞</th>
-                    <th style="text-align:right">收藏</th>
-                    <th style="text-align:right">评论</th>
-                    <th style="text-align:right">转发</th>
-                    <th style="text-align:right">互动率</th>
-                    <th>涨势</th>
-                    <th>发布</th>
-                    <th>时长</th>
-                </tr></thead>
-                <tbody>
-            <tr>
-                <td class="note-title">晚上总醒，可能晚餐吃错，营养师的助眠食谱</td>
-                <td class="num">43</td>
-                <td class="num">3</td>
-                <td class="num">0</td>
-                <td class="num">0</td>
-                <td class="num">0</td>
-                <td class="num"><span class="eng-high">7.0%</span></td>
-                <td><span class="tag tag-flat">💤 趋于平稳</span></td>
-                <td class="date">04-15</td>
-                <td class="date">158s</td>
-            </tr></tbody>
-            </table>
-        </div>
-        <div class="week-section">
-            <div class="week-section-header">
-                <span class="week-title">📆 04/06 - 04/12</span>
-                <span class="week-summary">共 2 篇 | 浏览 280 | 点赞 6</span>
-            </div>
-            <table class="notes-table">
-                <thead><tr>
-                    <th>标题</th>
-                    <th style="text-align:right">浏览</th>
-                    <th style="text-align:right">点赞</th>
-                    <th style="text-align:right">收藏</th>
-                    <th style="text-align:right">评论</th>
-                    <th style="text-align:right">转发</th>
-                    <th style="text-align:right">互动率</th>
-                    <th>涨势</th>
-                    <th>发布</th>
-                    <th>时长</th>
-                </tr></thead>
-                <tbody>
-            <tr>
-                <td class="note-title">一人掌管全家胃：如何给老人控糖给孩子补脑</td>
-                <td class="num">86</td>
-                <td class="num">1</td>
-                <td class="num">0</td>
-                <td class="num">0</td>
-                <td class="num">0</td>
-                <td class="num"><span class="eng-low">1.2%</span></td>
-                <td><span class="tag tag-flat">💤 趋于平稳</span></td>
-                <td class="date">04-12</td>
-                <td class="date">215s</td>
-            </tr>
-            <tr>
-                <td class="note-title">脸色暗沉？可能是脾胃不和导致，3个调理法</td>
-                <td class="num">194</td>
-                <td class="num">5</td>
-                <td class="num">0</td>
-                <td class="num">2</td>
-                <td class="num">0</td>
-                <td class="num"><span class="eng-mid">3.6%</span></td>
-                <td><span class="tag tag-flat">💤 趋于平稳</span></td>
-                <td class="date">04-09</td>
-                <td class="date">222s</td>
-            </tr></tbody>
-            </table>
-        </div>
   </div>
 
 </div>

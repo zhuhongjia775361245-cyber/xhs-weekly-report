@@ -769,10 +769,7 @@ def generate_html(data: dict, prev_data: dict = None) -> str:
     total_comments = sum(int(n.get("comments_count", 0) or 0) for n in recent_notes)
     overall_eng    = calculate_engagement(total_views, total_likes, total_collects, total_comments)
 
-    weekly_summary_html = generate_weekly_summary(weeks_data)
-    notes_detail_html   = generate_notes_detail(weeks_data, tracking)
-    comparison_html     = generate_comparison(recent_notes, tracking)
-    diagnosis_html      = generate_content_diagnosis(recent_notes, all_notes=notes, tracking=tracking)
+    diagnosis_html = generate_content_diagnosis(recent_notes, all_notes=notes, tracking=tracking)
 
     return f"""<!DOCTYPE html>
 <html lang="zh-CN">
@@ -801,34 +798,6 @@ def generate_html(data: dict, prev_data: dict = None) -> str:
   .section-title {{ font-size: 16px; font-weight: 600; margin-bottom: 18px;
                     border-left: 4px solid #ff2442; padding-left: 10px; color: #222; }}
 
-  /* 周统计卡片 */
-  .weeks-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; }}
-  .week-card {{ background: #fff9fa; border-radius: 12px; padding: 18px; border: 1px solid #ffe0e5; }}
-  .week-header {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }}
-  .week-label {{ font-size: 13px; font-weight: 600; }}
-  .week-count {{ background: #ffe0e5; color: #ff2442; padding: 2px 8px; border-radius: 8px; font-size: 11px; }}
-  .week-stats {{ display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px; }}
-  .stat-item {{ text-align: center; }}
-  .stat-value {{ font-size: 16px; font-weight: 700; color: #ff2442; display: block; }}
-  .stat-label {{ font-size: 11px; color: #999; }}
-  .week-avg {{ font-size: 11px; color: #888; display: flex; justify-content: space-around; }}
-
-  /* 笔记详情表 */
-  .week-section {{ margin-bottom: 20px; }}
-  .week-section-header {{ display: flex; justify-content: space-between; align-items: center;
-                           margin-bottom: 12px; padding-bottom: 10px; border-bottom: 2px solid #ffe0e5; }}
-  .week-title {{ font-size: 14px; font-weight: 600; }}
-  .week-summary {{ font-size: 12px; color: #ff2442; }}
-  table.notes-table {{ width: 100%; border-collapse: collapse; font-size: 13px; }}
-  th {{ background: #fff5f7; color: #ff2442; font-weight: 600; padding: 10px 10px;
-       text-align: left; border-bottom: 2px solid #ffe0e5; white-space: nowrap; }}
-  td {{ padding: 10px 10px; border-bottom: 1px solid #f5f5f5; vertical-align: middle; }}
-  tr:hover td {{ background: #fff9fa; }}
-  .note-title {{ max-width: 280px; color: #333; line-height: 1.4; }}
-  .rank {{ font-size: 15px; text-align: center; }}
-  .num {{ color: #555; text-align: right; white-space: nowrap; }}
-  .date {{ color: #aaa; font-size: 12px; white-space: nowrap; }}
-
   /* 互动率颜色 */
   .eng-high {{ color: #22c55e; font-weight: 700; }}
   .eng-mid  {{ color: #f59e0b; font-weight: 600; }}
@@ -841,11 +810,6 @@ def generate_html(data: dict, prev_data: dict = None) -> str:
   .tag-slow {{ background: #fefce8; color: #ca8a04; }}
   .tag-flat {{ background: #f1f5f9; color: #94a3b8; }}
   .tag-new  {{ background: #eff6ff; color: #3b82f6; }}
-
-  /* 横向对比进度条 */
-  .bar-wrap {{ background: #f1f5f9; border-radius: 4px; height: 6px; min-width: 80px; margin-bottom: 3px; }}
-  .bar {{ background: linear-gradient(90deg, #ff2442, #ff6b81); border-radius: 4px; height: 6px; }}
-  .bar-num {{ font-size: 12px; color: #666; }}
 
   /* 内容诊断 */
   .diag-cards {{ display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }}
@@ -951,7 +915,6 @@ def generate_html(data: dict, prev_data: dict = None) -> str:
 
   @media (max-width: 768px) {{
     .overview {{ grid-template-columns: repeat(2, 1fr); }}
-    .weeks-grid {{ grid-template-columns: 1fr; }}
     .diag-cards {{ grid-template-columns: 1fr; }}
     .diag-stats {{ grid-template-columns: repeat(2, 1fr); }}
     .header {{ padding: 24px 20px; }}
@@ -976,28 +939,10 @@ def generate_html(data: dict, prev_data: dict = None) -> str:
     <div class="overview-item"><div class="value {'eng-high' if overall_eng >= 5 else 'eng-mid' if overall_eng >= 2 else ''}">{fmt_pct(overall_eng)}</div><div class="label">综合互动率</div></div>
   </div>
 
-  <!-- 按周统计 -->
+  <!-- 单篇笔记分析 -->
   <div class="section">
-    <div class="section-title">📊 按周统计</div>
-    <div class="weeks-grid">{weekly_summary_html}</div>
-  </div>
-
-  <!-- 横向对比 -->
-  <div class="section">
-    <div class="section-title">🏆 笔记横向对比（按互动率排序）</div>
-    {comparison_html}
-  </div>
-
-  <!-- 内容诊断 -->
-  <div class="section">
-    <div class="section-title">🔍 内容诊断 & 选题建议</div>
+    <div class="section-title">📊 单篇笔记分析</div>
     {diagnosis_html}
-  </div>
-
-  <!-- 按篇详情 -->
-  <div class="section">
-    <div class="section-title">📝 每篇详情（含互动率 & 涨势）</div>
-    {notes_detail_html}
   </div>
 
 </div>
