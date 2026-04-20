@@ -458,89 +458,272 @@ def generate_topic_suggestions(all_notes: list, collect_rate: float, like_rate: 
     return rows_html
 
 
-def generate_content_diagnosis(recent_notes: list, all_notes: list = None) -> str:
-    """内容诊断：规律识别 + 10条选题建议"""
+def _analyze_single_note(note: dict, tracking_snapshots: list) -> dict:
+    """
+    对单篇笔记进行数据分析，返回诊断结果。
+    """
+    views    = int(note.get("view_count", 0) or 0)
+    likes    = int(note.get("likes", 0) or 0)
+    collects = int(note.get("collected_count", 0) or 0)
+    comments = int(note.get("comments_count", 0) or 0)
+    shares   = int(note.get("share_count", 0) or 0)
+    duration = int(note.get("video_info", {}).get("duration", 0) or 0)
+    title    = note.get("display_title", "无标题")
+    time_str = note.get("time", "")
+    days     = days_since_publish(time_str)
+    eng      = calculate_engagement(views, likes, collects, comments)
+
+    # ── 趋势判断（基于多日快照）─────────────────────────
+    trend_label = "持平"
+    trend_icon  = "➡️"
+    trend_class = "trend-flat"
+    daily_avg_growth = 0
+
+    if len(tracking_snapshots) >= 2:
+        sorted_snaps = sorted(tracking_snapshots, key=lambda x: x.get("date", ""))
+        first = sorted_snaps[0]
+        last  = sorted_snaps[-1]
+        date_diff = (datetime.datetime.strptime(last["date"], "%Y-%m-%d")
+                     - datetime.datetime.strptime(first["date"], "%Y-%m-%d")).days or 1
+        view_diff = int(last.get("views", 0)) - int(first.get("views", 0))
+        daily_avg_growth = view_diff / date_diff
+
+        if daily_avg_growth >= 50:
+            trend_label, trend_icon, trend_class = "快速涨", "🚀", "trend-up"
+        elif daily_avg_growth >= 10:
+            trend_label, trend_icon, trend_class = "稳步涨", "📈", "trend-up"
+        elif daily_avg_growth <= -5:
+            trend_label, trend_icon, trend_class = "下滑中", "📉", "trend-down"
+        else:
+            trend_label, trend_icon, trend_class = "流量见顶", "➡️", "trend-flat"
+    elif days <= 3:
+        trend_label, trend_icon, trend_class = "新发潜力", "🆕", "trend-new"
+    elif views < 100:
+        trend_label, trend_icon, trend_class = "曝光不足", "⚠️", "trend-warn"
+
+    # ── 指标雷达（各项率）──────────────────────────────
+    like_rate    = likes    / views * 100 if views else 0
+    collect_rate = collects / views * 100 if views else 0
+    comment_rate = comments / views * 100 if views else 0
+    share_rate   = shares   / views * 100 if views else 0
+
+    # ── 强项 / 弱项 标签 ──────────────────────────────
+    strengths = []
+    weaknesses = []
+
+    if eng >= 5:
+        strengths.append("互动率优秀")
+    elif eng < 1 and views > 500:
+        weaknesses.append("互动率偏低")
+
+    if like_rate > collect_rate and like_rate > 2:
+        strengths.append("点赞率高（情感共鸣强）")
+    if collect_rate > like_rate and collect_rate > 2:
+        strengths.append("收藏率高（内容实用）")
+    if comment_rate > 1:
+        strengths.append("评论区活跃（引发讨论）")
+    if share_rate > 1:
+        strengths.append("转发率高（有传播力）")
+
+    if views > 0 and likes == 0 and collects == 0:
+        weaknesses.append("零互动，钩子可能不够强")
+    if duration > 0 and duration < 30 and eng < 1:
+        weaknesses.append("视频过短，信息密度不够")
+    if views > 1000 and eng < 0.5:
+        weaknesses.append("曝光量够但转化差，开头需优化")
+
+    # ── 综合诊断 + 改进建议 ───────────────────────────
+    if views == 0:
+        verdict = "尚无数据"
+        action  = "等待数据积累，关注发布后24小时的初始流量"
+    elif days <= 3:
+        if eng >= 5:
+            verdict = "首发数据优秀"
+            action  = "继续保持这类内容的产出节奏，这是你的爆款方向"
+        elif eng >= 2:
+            verdict = "首发数据正常"
+            action  = "继续观察3-5天，流量仍在上升期，不要急于判断"
+        else:
+            verdict = "首发数据偏弱"
+            action  = "新笔记通常有冷启动期，关注24小时后的自然增长，如果持续低迷建议优化封面和标题"
+    elif daily_avg_growth >= 20:
+        verdict = "持续在涨"
+        action  = "流量还在爬升，继续观察，不要下架。可在评论区置顶相关话题引导互动"
+    elif daily_avg_growth <= -10:
+        verdict = "涨势已过"
+        action  = "流量趋于见顶，可以考虑制作同话题后续篇，利用老笔记的长尾流量导流"
+    elif eng >= 5:
+        verdict = "高互动优质内容"
+        action  = "这是你的最佳内容方向，建议以此为模板复制到类似话题"
+    elif eng >= 2:
+        verdict = "表现中等"
+        action  = "数据中规中矩，可在评论区加强互动引导（如提问'你踩过几个？'）提升评论率"
+    elif views >= 500:
+        verdict = "曝光高但转化低"
+        action  = "开头3秒钩子不够吸引人，建议重制封面或尝试'前3秒'重新剪辑"
+    else:
+        verdict = "整体偏弱"
+        action  = "可能是话题本身流量池小，建议蹭当周热搜词，或测试不同标题角度"
+
+    # ── 互动结构雷达（文本条形图）─────────────────────
+    def mini_bar(rate, color):
+        w = min(rate * 10, 100)
+        return f'<div class="mini-bar" style="width:{w}%;background:{color}"></div>'
+
+    radar_html = f"""
+    <div class="note-radar">
+        <div class="radar-row">
+            <span class="radar-label">点赞 {like_rate:.1f}%</span>
+            <div class="radar-track">{mini_bar(like_rate, '#ff6b81')}</div>
+        </div>
+        <div class="radar-row">
+            <span class="radar-label">收藏 {collect_rate:.1f}%</span>
+            <div class="radar-track">{mini_bar(collect_rate, '#4facfe')}</div>
+        </div>
+        <div class="radar-row">
+            <span class="radar-label">评论 {comment_rate:.1f}%</span>
+            <div class="radar-track">{mini_bar(comment_rate, '#ffd32a')}</div>
+        </div>
+        <div class="radar-row">
+            <span class="radar-label">转发 {share_rate:.1f}%</span>
+            <div class="radar-track">{mini_bar(share_rate, '#05c46b')}</div>
+        </div>
+    </div>"""
+
+    # ── 组装诊断卡片 ──────────────────────────────────
+    strength_tags = "".join(
+        f'<span class="note-tag tag-strong">{s}</span>' for s in strengths
+    ) if strengths else ""
+    weak_tags = "".join(
+        f'<span class="note-tag tag-weak">{w}</span>' for w in weaknesses
+    ) if weaknesses else ""
+
+    eng_class = "eng-high" if eng >= 5 else ("eng-mid" if eng >= 2 else "eng-low")
+    dur_str = f"{duration // 60}:{duration % 60:02d}" if duration else "—"
+
+    card = f"""
+    <div class="note-card">
+        <div class="note-card-header">
+            <div class="note-card-title-row">
+                <span class="note-card-title">{title[:28]}{'…' if len(title) > 28 else ''}</span>
+                <span class="note-eng-badge {eng_class}">{fmt_pct(eng)}</span>
+            </div>
+            <div class="note-card-meta">
+                <span>发布 {days} 天</span>
+                <span>·</span>
+                <span>时长 {dur_str}</span>
+                <span>·</span>
+                <span class="{trend_class}">{trend_icon} {trend_label}</span>
+            </div>
+        </div>
+        <div class="note-card-body">
+            <div class="note-metrics">
+                <div class="metric-box">
+                    <div class="metric-num">{fmt_number(views)}</div>
+                    <div class="metric-label">浏览</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-num">{fmt_number(likes)}</div>
+                    <div class="metric-label">点赞</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-num">{fmt_number(collects)}</div>
+                    <div class="metric-label">收藏</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-num">{fmt_number(comments)}</div>
+                    <div class="metric-label">评论</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-num">{fmt_number(shares)}</div>
+                    <div class="metric-label">转发</div>
+                </div>
+            </div>
+            <div class="note-diag">
+                <div class="note-verdict">
+                    <span class="verdict-badge {eng_class}">{verdict}</span>
+                </div>
+                <div class="note-action">
+                    <span class="action-icon">💡</span>
+                    <span class="action-text">{action}</span>
+                </div>
+                {radar_html}
+                <div class="note-tags-row">
+                    {strength_tags}{weak_tags}
+                </div>
+            </div>
+        </div>
+    </div>"""
+
+    return card
+
+
+def generate_content_diagnosis(recent_notes: list, all_notes: list = None, tracking: dict = None) -> str:
+    """单篇笔记诊断 + 10条选题建议"""
     if not recent_notes:
         return '<div class="no-data">暂无数据</div>'
 
-    # 计算各篇指标
-    items = []
+    # 加载追踪数据
+    tracking = tracking or {}
+    if tracking is None:
+        tp = DATA_DIR / "note_tracking.json"
+        if tp.exists():
+            with open(tp, encoding="utf-8") as f:
+                tracking = json.load(f)
+
+    # 按互动率排序后逐篇生成分析卡片
+    scored = []
     for note in recent_notes:
+        nid = note.get("note_id", "")
         views    = int(note.get("view_count", 0) or 0)
         likes    = int(note.get("likes", 0) or 0)
         collects = int(note.get("collected_count", 0) or 0)
         comments = int(note.get("comments_count", 0) or 0)
         eng = calculate_engagement(views, likes, collects, comments)
-        duration = note.get("video_info", {}).get("duration", 0)
-        items.append({
-            "title": note.get("display_title", ""),
-            "views": views, "likes": likes, "collects": collects,
-            "comments": comments, "eng": eng, "duration": duration,
-            "time": note.get("time", ""),
-        })
+        scored.append({"note": note, "eng": eng})
 
-    items.sort(key=lambda x: x["eng"], reverse=True)
-    best = items[0] if items else None
-    worst = items[-1] if len(items) > 1 else None
+    scored.sort(key=lambda x: x["eng"], reverse=True)
 
-    # 统计规律
-    avg_eng = sum(x["eng"] for x in items) / len(items) if items else 0
-    avg_views = sum(x["views"] for x in items) / len(items) if items else 0
-    avg_dur = sum(x["duration"] for x in items if x["duration"]) / max(1, sum(1 for x in items if x["duration"]))
+    cards_html = ""
+    for s in scored:
+        note = s["note"]
+        nid  = note.get("note_id", "")
+        snaps = tracking.get(nid, {}).get("snapshots", [])
+        cards_html += _analyze_single_note(note, snaps)
 
-    # 收藏率 vs 点赞率
-    total_views = sum(x["views"] for x in items)
-    total_likes = sum(x["likes"] for x in items)
-    total_collects = sum(x["collects"] for x in items)
-    like_rate = total_likes / total_views * 100 if total_views else 0
-    collect_rate = total_collects / total_views * 100 if total_views else 0
+    # ── 全局信号摘要（保留小面板）──────────────────────
+    total_views    = sum(s["eng"] for s in scored)  # 复用变量名
+    items_eng_list = [s["eng"] for s in scored]
+    avg_eng        = sum(items_eng_list) / len(items_eng_list) if items_eng_list else 0
 
-    # 判断内容方向
+    total_views    = sum(int(n.get("view_count", 0) or 0) for n in recent_notes)
+    total_likes    = sum(int(n.get("likes", 0) or 0) for n in recent_notes)
+    total_collects = sum(int(n.get("collected_count", 0) or 0) for n in recent_notes)
+    like_rate      = total_likes    / total_views    * 100 if total_views    else 0
+    collect_rate   = total_collects / total_views    * 100 if total_views    else 0
+
     if collect_rate > like_rate:
-        content_signal = "收藏率 > 点赞率，说明内容实用性强，用户愿意存起来备用（工具型内容效果好）"
-        tip = "继续做「清单/攻略/食谱」类内容，结尾加「收藏备用」引导"
+        content_signal = "收藏率 > 点赞率，实用型内容更受欢迎"
+        tip = "清单/攻略/食谱类内容可多加；结尾引导「收藏备用」"
     else:
-        content_signal = "点赞率 > 收藏率，情感共鸣型内容表现好"
-        tip = "可以在实用内容中加入更多故事感和情感共鸣点"
+        content_signal = "点赞率 > 收藏率，情感共鸣型内容更受欢迎"
+        tip = "在实用内容中加入故事感和情绪点，引发共鸣"
 
-    best_html = f"""
-    <div class="diag-card diag-best">
-        <div class="diag-icon">🏆</div>
-        <div class="diag-body">
-            <div class="diag-label">表现最佳</div>
-            <div class="diag-title">《{best['title'][:25]}》</div>
-            <div class="diag-meta">互动率 {fmt_pct(best['eng'])} · 浏览 {fmt_number(best['views'])} · 时长 {best['duration']}s</div>
-        </div>
-    </div>""" if best else ""
-
-    worst_html = f"""
-    <div class="diag-card diag-worst">
-        <div class="diag-icon">⚠️</div>
-        <div class="diag-body">
-            <div class="diag-label">待提升</div>
-            <div class="diag-title">《{worst['title'][:25]}》</div>
-            <div class="diag-meta">互动率 {fmt_pct(worst['eng'])} · 浏览 {fmt_number(worst['views'])} · 时长 {worst['duration']}s</div>
-        </div>
-    </div>""" if worst else ""
-
-    # 生成选题建议
+    # 选题建议
+    avg_dur = sum(int(n.get("video_info", {}).get("duration", 0) or 0) for n in recent_notes) / max(1, len(recent_notes))
     suggest_html = generate_topic_suggestions(
         all_notes or recent_notes, collect_rate, like_rate, avg_dur
     )
 
     return f"""
-    <div class="diag-cards">
-        {best_html}
-        {worst_html}
-    </div>
-    <div class="diag-stats">
+    <div class="diag-summary-bar">
         <div class="diag-stat-item">
-            <span class="diag-stat-label">平均互动率</span>
+            <span class="diag-stat-label">篇均互动率</span>
             <span class="diag-stat-value {'eng-high' if avg_eng >= 5 else 'eng-mid' if avg_eng >= 2 else 'eng-low'}">{fmt_pct(avg_eng)}</span>
         </div>
         <div class="diag-stat-item">
             <span class="diag-stat-label">篇均浏览</span>
-            <span class="diag-stat-value">{fmt_number(int(avg_views))}</span>
+            <span class="diag-stat-value">{fmt_number(total_views // max(1, len(recent_notes)))}</span>
         </div>
         <div class="diag-stat-item">
             <span class="diag-stat-label">点赞率</span>
@@ -550,14 +733,14 @@ def generate_content_diagnosis(recent_notes: list, all_notes: list = None) -> st
             <span class="diag-stat-label">收藏率</span>
             <span class="diag-stat-value">{fmt_pct(collect_rate)}</span>
         </div>
-        <div class="diag-stat-item">
-            <span class="diag-stat-label">平均视频时长</span>
-            <span class="diag-stat-value">{int(avg_dur)}s</span>
-        </div>
     </div>
     <div class="diag-insight">
         <div class="insight-row">📊 <strong>数据信号：</strong>{content_signal}</div>
         <div class="insight-row">💡 <strong>内容策略：</strong>{tip}</div>
+    </div>
+
+    <div class="note-cards-grid">
+        {cards_html}
     </div>
 
     <div class="suggest-section">
@@ -589,7 +772,7 @@ def generate_html(data: dict, prev_data: dict = None) -> str:
     weekly_summary_html = generate_weekly_summary(weeks_data)
     notes_detail_html   = generate_notes_detail(weeks_data, tracking)
     comparison_html     = generate_comparison(recent_notes, tracking)
-    diagnosis_html      = generate_content_diagnosis(recent_notes, all_notes=notes)
+    diagnosis_html      = generate_content_diagnosis(recent_notes, all_notes=notes, tracking=tracking)
 
     return f"""<!DOCTYPE html>
 <html lang="zh-CN">
@@ -701,6 +884,70 @@ def generate_html(data: dict, prev_data: dict = None) -> str:
   .suggest-title-row {{ display: flex; align-items: center; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }}
   .suggest-title {{ font-size: 14px; font-weight: 600; color: #222; line-height: 1.4; }}
   .suggest-reason {{ font-size: 12px; color: #666; line-height: 1.7; }}
+
+  /* 单篇笔记诊断卡片 */
+  .note-cards-grid {{ display: grid;
+                     grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+                     gap: 16px; margin-top: 16px; }}
+  .note-card {{ background: #fff; border-radius: 16px; border: 1px solid #f0f0f0;
+                overflow: hidden; transition: box-shadow 0.2s, transform 0.2s; }}
+  .note-card:hover {{ box-shadow: 0 4px 20px rgba(0,0,0,0.08); transform: translateY(-2px); }}
+  .note-card-header {{ background: linear-gradient(135deg, #fef7f8, #f0f7ff);
+                       padding: 14px 16px 10px; border-bottom: 1px solid #f5f5f5; }}
+  .note-card-title-row {{ display: flex; align-items: flex-start;
+                           justify-content: space-between; gap: 10px; margin-bottom: 6px; }}
+  .note-card-title {{ font-size: 14px; font-weight: 700; color: #222; line-height: 1.4; flex: 1; }}
+  .note-eng-badge {{ font-size: 13px; font-weight: 700; padding: 2px 10px;
+                     border-radius: 20px; flex-shrink: 0; }}
+  .note-card-meta {{ display: flex; align-items: center; gap: 6px;
+                     font-size: 12px; color: #999; flex-wrap: wrap; }}
+  .trend-up    {{ color: #e74c3c !important; }}
+  .trend-flat  {{ color: #888 !important; }}
+  .trend-down  {{ color: #666 !important; }}
+  .trend-warn  {{ color: #f39c12 !important; }}
+  .trend-new   {{ color: #2ecc71 !important; }}
+
+  .note-card-body {{ padding: 14px 16px; }}
+
+  /* 指标5格 */
+  .note-metrics {{ display: grid; grid-template-columns: repeat(5, 1fr);
+                   gap: 6px; margin-bottom: 14px; }}
+  .metric-box {{ background: #f9f9f9; border-radius: 10px; padding: 8px 4px;
+                 text-align: center; }}
+  .metric-num  {{ font-size: 15px; font-weight: 700; color: #333; }}
+  .metric-label {{ font-size: 11px; color: #999; margin-top: 2px; }}
+
+  /* 诊断区 */
+  .note-diag {{ }}
+  .note-verdict {{ margin-bottom: 8px; }}
+  .verdict-badge {{ font-size: 12px; font-weight: 700; padding: 3px 12px;
+                    border-radius: 20px; color: white; }}
+  .note-action {{ background: #fef9f0; border-radius: 10px; padding: 10px 12px;
+                   margin-bottom: 12px; display: flex; gap: 8px; align-items: flex-start; }}
+  .action-icon {{ font-size: 14px; flex-shrink: 0; margin-top: 1px; }}
+  .action-text {{ font-size: 12px; color: #555; line-height: 1.6; }}
+
+  /* 迷你雷达条形 */
+  .note-radar {{ margin-bottom: 10px; }}
+  .radar-row  {{ display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }}
+  .radar-label {{ font-size: 11px; color: #888; width: 72px; flex-shrink: 0; }}
+  .radar-track {{ flex: 1; height: 8px; background: #f0f0f0; border-radius: 4px; overflow: hidden; }}
+  .mini-bar    {{ height: 100%; border-radius: 4px; min-width: 2px; }}
+
+  /* 标签 */
+  .note-tags-row {{ display: flex; flex-wrap: wrap; gap: 6px; }}
+  .note-tag {{ font-size: 11px; padding: 2px 8px; border-radius: 12px; font-weight: 500; }}
+  .tag-strong {{ background: #e8f5e9; color: #2e7d32; }}
+  .tag-weak    {{ background: #fff3e0; color: #e65100; }}
+
+  /* 顶部汇总栏 */
+  .diag-summary-bar {{ display: flex; gap: 0; border-radius: 14px; overflow: hidden;
+                       margin-bottom: 14px; border: 1px solid #f0f0f0; }}
+  .diag-summary-bar .diag-stat-item {{ flex: 1; background: #fafafa; padding: 12px 14px;
+                                        text-align: center; border-right: 1px solid #f0f0f0; }}
+  .diag-summary-bar .diag-stat-item:last-child {{ border-right: none; }}
+  .diag-summary-bar .diag-stat-label {{ display: block; font-size: 11px; color: #999; margin-bottom: 4px; }}
+  .diag-summary-bar .diag-stat-value {{ display: block; font-size: 16px; font-weight: 700; }}
 
   @media (max-width: 768px) {{
     .overview {{ grid-template-columns: repeat(2, 1fr); }}

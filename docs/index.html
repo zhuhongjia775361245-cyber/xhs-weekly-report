@@ -109,6 +109,70 @@
   .suggest-title { font-size: 14px; font-weight: 600; color: #222; line-height: 1.4; }
   .suggest-reason { font-size: 12px; color: #666; line-height: 1.7; }
 
+  /* 单篇笔记诊断卡片 */
+  .note-cards-grid { display: grid;
+                     grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+                     gap: 16px; margin-top: 16px; }
+  .note-card { background: #fff; border-radius: 16px; border: 1px solid #f0f0f0;
+                overflow: hidden; transition: box-shadow 0.2s, transform 0.2s; }
+  .note-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.08); transform: translateY(-2px); }
+  .note-card-header { background: linear-gradient(135deg, #fef7f8, #f0f7ff);
+                       padding: 14px 16px 10px; border-bottom: 1px solid #f5f5f5; }
+  .note-card-title-row { display: flex; align-items: flex-start;
+                           justify-content: space-between; gap: 10px; margin-bottom: 6px; }
+  .note-card-title { font-size: 14px; font-weight: 700; color: #222; line-height: 1.4; flex: 1; }
+  .note-eng-badge { font-size: 13px; font-weight: 700; padding: 2px 10px;
+                     border-radius: 20px; flex-shrink: 0; }
+  .note-card-meta { display: flex; align-items: center; gap: 6px;
+                     font-size: 12px; color: #999; flex-wrap: wrap; }
+  .trend-up    { color: #e74c3c !important; }
+  .trend-flat  { color: #888 !important; }
+  .trend-down  { color: #666 !important; }
+  .trend-warn  { color: #f39c12 !important; }
+  .trend-new   { color: #2ecc71 !important; }
+
+  .note-card-body { padding: 14px 16px; }
+
+  /* 指标5格 */
+  .note-metrics { display: grid; grid-template-columns: repeat(5, 1fr);
+                   gap: 6px; margin-bottom: 14px; }
+  .metric-box { background: #f9f9f9; border-radius: 10px; padding: 8px 4px;
+                 text-align: center; }
+  .metric-num  { font-size: 15px; font-weight: 700; color: #333; }
+  .metric-label { font-size: 11px; color: #999; margin-top: 2px; }
+
+  /* 诊断区 */
+  .note-diag { }
+  .note-verdict { margin-bottom: 8px; }
+  .verdict-badge { font-size: 12px; font-weight: 700; padding: 3px 12px;
+                    border-radius: 20px; color: white; }
+  .note-action { background: #fef9f0; border-radius: 10px; padding: 10px 12px;
+                   margin-bottom: 12px; display: flex; gap: 8px; align-items: flex-start; }
+  .action-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+  .action-text { font-size: 12px; color: #555; line-height: 1.6; }
+
+  /* 迷你雷达条形 */
+  .note-radar { margin-bottom: 10px; }
+  .radar-row  { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+  .radar-label { font-size: 11px; color: #888; width: 72px; flex-shrink: 0; }
+  .radar-track { flex: 1; height: 8px; background: #f0f0f0; border-radius: 4px; overflow: hidden; }
+  .mini-bar    { height: 100%; border-radius: 4px; min-width: 2px; }
+
+  /* 标签 */
+  .note-tags-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .note-tag { font-size: 11px; padding: 2px 8px; border-radius: 12px; font-weight: 500; }
+  .tag-strong { background: #e8f5e9; color: #2e7d32; }
+  .tag-weak    { background: #fff3e0; color: #e65100; }
+
+  /* 顶部汇总栏 */
+  .diag-summary-bar { display: flex; gap: 0; border-radius: 14px; overflow: hidden;
+                       margin-bottom: 14px; border: 1px solid #f0f0f0; }
+  .diag-summary-bar .diag-stat-item { flex: 1; background: #fafafa; padding: 12px 14px;
+                                        text-align: center; border-right: 1px solid #f0f0f0; }
+  .diag-summary-bar .diag-stat-item:last-child { border-right: none; }
+  .diag-summary-bar .diag-stat-label { display: block; font-size: 11px; color: #999; margin-bottom: 4px; }
+  .diag-summary-bar .diag-stat-value { display: block; font-size: 16px; font-weight: 700; }
+
   @media (max-width: 768px) {
     .overview { grid-template-columns: repeat(2, 1fr); }
     .weeks-grid { grid-template-columns: 1fr; }
@@ -232,29 +296,9 @@
   <div class="section">
     <div class="section-title">🔍 内容诊断 & 选题建议</div>
     
-    <div class="diag-cards">
-        
-    <div class="diag-card diag-best">
-        <div class="diag-icon">🏆</div>
-        <div class="diag-body">
-            <div class="diag-label">表现最佳</div>
-            <div class="diag-title">《晚上总醒，可能晚餐吃错，营养师的助眠食谱》</div>
-            <div class="diag-meta">互动率 7.0% · 浏览 43 · 时长 158s</div>
-        </div>
-    </div>
-        
-    <div class="diag-card diag-worst">
-        <div class="diag-icon">⚠️</div>
-        <div class="diag-body">
-            <div class="diag-label">待提升</div>
-            <div class="diag-title">《一人掌管全家胃：如何给老人控糖给孩子补脑》</div>
-            <div class="diag-meta">互动率 1.2% · 浏览 86 · 时长 215s</div>
-        </div>
-    </div>
-    </div>
-    <div class="diag-stats">
+    <div class="diag-summary-bar">
         <div class="diag-stat-item">
-            <span class="diag-stat-label">平均互动率</span>
+            <span class="diag-stat-label">篇均互动率</span>
             <span class="diag-stat-value eng-mid">3.9%</span>
         </div>
         <div class="diag-stat-item">
@@ -269,14 +313,224 @@
             <span class="diag-stat-label">收藏率</span>
             <span class="diag-stat-value">0.0%</span>
         </div>
-        <div class="diag-stat-item">
-            <span class="diag-stat-label">平均视频时长</span>
-            <span class="diag-stat-value">198s</span>
-        </div>
     </div>
     <div class="diag-insight">
-        <div class="insight-row">📊 <strong>数据信号：</strong>点赞率 > 收藏率，情感共鸣型内容表现好</div>
-        <div class="insight-row">💡 <strong>内容策略：</strong>可以在实用内容中加入更多故事感和情感共鸣点</div>
+        <div class="insight-row">📊 <strong>数据信号：</strong>点赞率 > 收藏率，情感共鸣型内容更受欢迎</div>
+        <div class="insight-row">💡 <strong>内容策略：</strong>在实用内容中加入故事感和情绪点，引发共鸣</div>
+    </div>
+
+    <div class="note-cards-grid">
+        
+    <div class="note-card">
+        <div class="note-card-header">
+            <div class="note-card-title-row">
+                <span class="note-card-title">晚上总醒，可能晚餐吃错，营养师的助眠食谱</span>
+                <span class="note-eng-badge eng-high">7.0%</span>
+            </div>
+            <div class="note-card-meta">
+                <span>发布 5 天</span>
+                <span>·</span>
+                <span>时长 2:38</span>
+                <span>·</span>
+                <span class="trend-warn">⚠️ 曝光不足</span>
+            </div>
+        </div>
+        <div class="note-card-body">
+            <div class="note-metrics">
+                <div class="metric-box">
+                    <div class="metric-num">43</div>
+                    <div class="metric-label">浏览</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-num">3</div>
+                    <div class="metric-label">点赞</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-num">0</div>
+                    <div class="metric-label">收藏</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-num">0</div>
+                    <div class="metric-label">评论</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-num">0</div>
+                    <div class="metric-label">转发</div>
+                </div>
+            </div>
+            <div class="note-diag">
+                <div class="note-verdict">
+                    <span class="verdict-badge eng-high">高互动优质内容</span>
+                </div>
+                <div class="note-action">
+                    <span class="action-icon">💡</span>
+                    <span class="action-text">这是你的最佳内容方向，建议以此为模板复制到类似话题</span>
+                </div>
+                
+    <div class="note-radar">
+        <div class="radar-row">
+            <span class="radar-label">点赞 7.0%</span>
+            <div class="radar-track"><div class="mini-bar" style="width:69.76744186046511%;background:#ff6b81"></div></div>
+        </div>
+        <div class="radar-row">
+            <span class="radar-label">收藏 0.0%</span>
+            <div class="radar-track"><div class="mini-bar" style="width:0.0%;background:#4facfe"></div></div>
+        </div>
+        <div class="radar-row">
+            <span class="radar-label">评论 0.0%</span>
+            <div class="radar-track"><div class="mini-bar" style="width:0.0%;background:#ffd32a"></div></div>
+        </div>
+        <div class="radar-row">
+            <span class="radar-label">转发 0.0%</span>
+            <div class="radar-track"><div class="mini-bar" style="width:0.0%;background:#05c46b"></div></div>
+        </div>
+    </div>
+                <div class="note-tags-row">
+                    <span class="note-tag tag-strong">互动率优秀</span><span class="note-tag tag-strong">点赞率高（情感共鸣强）</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="note-card">
+        <div class="note-card-header">
+            <div class="note-card-title-row">
+                <span class="note-card-title">脸色暗沉？可能是脾胃不和导致，3个调理法</span>
+                <span class="note-eng-badge eng-mid">3.6%</span>
+            </div>
+            <div class="note-card-meta">
+                <span>发布 11 天</span>
+                <span>·</span>
+                <span>时长 3:42</span>
+                <span>·</span>
+                <span class="trend-flat">➡️ 持平</span>
+            </div>
+        </div>
+        <div class="note-card-body">
+            <div class="note-metrics">
+                <div class="metric-box">
+                    <div class="metric-num">194</div>
+                    <div class="metric-label">浏览</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-num">5</div>
+                    <div class="metric-label">点赞</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-num">0</div>
+                    <div class="metric-label">收藏</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-num">2</div>
+                    <div class="metric-label">评论</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-num">0</div>
+                    <div class="metric-label">转发</div>
+                </div>
+            </div>
+            <div class="note-diag">
+                <div class="note-verdict">
+                    <span class="verdict-badge eng-mid">表现中等</span>
+                </div>
+                <div class="note-action">
+                    <span class="action-icon">💡</span>
+                    <span class="action-text">数据中规中矩，可在评论区加强互动引导（如提问'你踩过几个？'）提升评论率</span>
+                </div>
+                
+    <div class="note-radar">
+        <div class="radar-row">
+            <span class="radar-label">点赞 2.6%</span>
+            <div class="radar-track"><div class="mini-bar" style="width:25.773195876288657%;background:#ff6b81"></div></div>
+        </div>
+        <div class="radar-row">
+            <span class="radar-label">收藏 0.0%</span>
+            <div class="radar-track"><div class="mini-bar" style="width:0.0%;background:#4facfe"></div></div>
+        </div>
+        <div class="radar-row">
+            <span class="radar-label">评论 1.0%</span>
+            <div class="radar-track"><div class="mini-bar" style="width:10.309278350515463%;background:#ffd32a"></div></div>
+        </div>
+        <div class="radar-row">
+            <span class="radar-label">转发 0.0%</span>
+            <div class="radar-track"><div class="mini-bar" style="width:0.0%;background:#05c46b"></div></div>
+        </div>
+    </div>
+                <div class="note-tags-row">
+                    <span class="note-tag tag-strong">点赞率高（情感共鸣强）</span><span class="note-tag tag-strong">评论区活跃（引发讨论）</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="note-card">
+        <div class="note-card-header">
+            <div class="note-card-title-row">
+                <span class="note-card-title">一人掌管全家胃：如何给老人控糖给孩子补脑</span>
+                <span class="note-eng-badge eng-low">1.2%</span>
+            </div>
+            <div class="note-card-meta">
+                <span>发布 8 天</span>
+                <span>·</span>
+                <span>时长 3:35</span>
+                <span>·</span>
+                <span class="trend-warn">⚠️ 曝光不足</span>
+            </div>
+        </div>
+        <div class="note-card-body">
+            <div class="note-metrics">
+                <div class="metric-box">
+                    <div class="metric-num">86</div>
+                    <div class="metric-label">浏览</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-num">1</div>
+                    <div class="metric-label">点赞</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-num">0</div>
+                    <div class="metric-label">收藏</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-num">0</div>
+                    <div class="metric-label">评论</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-num">0</div>
+                    <div class="metric-label">转发</div>
+                </div>
+            </div>
+            <div class="note-diag">
+                <div class="note-verdict">
+                    <span class="verdict-badge eng-low">整体偏弱</span>
+                </div>
+                <div class="note-action">
+                    <span class="action-icon">💡</span>
+                    <span class="action-text">可能是话题本身流量池小，建议蹭当周热搜词，或测试不同标题角度</span>
+                </div>
+                
+    <div class="note-radar">
+        <div class="radar-row">
+            <span class="radar-label">点赞 1.2%</span>
+            <div class="radar-track"><div class="mini-bar" style="width:11.627906976744187%;background:#ff6b81"></div></div>
+        </div>
+        <div class="radar-row">
+            <span class="radar-label">收藏 0.0%</span>
+            <div class="radar-track"><div class="mini-bar" style="width:0.0%;background:#4facfe"></div></div>
+        </div>
+        <div class="radar-row">
+            <span class="radar-label">评论 0.0%</span>
+            <div class="radar-track"><div class="mini-bar" style="width:0.0%;background:#ffd32a"></div></div>
+        </div>
+        <div class="radar-row">
+            <span class="radar-label">转发 0.0%</span>
+            <div class="radar-track"><div class="mini-bar" style="width:0.0%;background:#05c46b"></div></div>
+        </div>
+    </div>
+                <div class="note-tags-row">
+                    
+                </div>
+            </div>
+        </div>
+    </div>
     </div>
 
     <div class="suggest-section">
@@ -474,16 +728,5 @@
 </div>
 
 <div class="footer">由 WorkBuddy 自动生成 · 2026-04-17 12:18:28</div>
-
-<!-- 跳转互动页面 -->
-<a href="interactive.html" class="float-btn" title="选题助手">🎯 选题助手</a>
-<style>
-.float-btn { position: fixed; bottom: 28px; right: 28px; background: #ff2442; color: white;
-             width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center;
-             justify-content: center; font-size: 22px; text-decoration: none;
-             box-shadow: 0 4px 16px rgba(255,36,66,0.4); z-index: 100;
-             transition: transform 0.2s, box-shadow 0.2s; }
-.float-btn:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(255,36,66,0.5); }
-</style>
 </body>
 </html>
