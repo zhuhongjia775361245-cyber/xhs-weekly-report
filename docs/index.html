@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>小红书运营周报 · 2026-04-17</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "PingFang SC", sans-serif; background: #fef6f7; color: #333; }
+  .header { background: linear-gradient(135deg, #ff2442 0%, #ff6b81 100%); color: white; padding: 32px 40px; }
+  .header h1 { font-size: 26px; font-weight: 700; }
+  .header p { margin-top: 6px; opacity: 0.85; font-size: 14px; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 28px 20px; }
+
+  /* 概览 */
+  .overview { background: white; border-radius: 16px; padding: 24px; margin-bottom: 24px;
+               display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; text-align: center;
+               box-shadow: 0 2px 12px rgba(255,36,66,0.06); }
+  .overview-item .value { font-size: 28px; font-weight: 700; color: #ff2442; }
+  .overview-item .label { font-size: 12px; color: #999; margin-top: 4px; }
+
+  /* section */
+  .section { background: white; border-radius: 16px; padding: 24px; margin-bottom: 24px;
+               box-shadow: 0 2px 12px rgba(255,36,66,0.06); }
+  .section-title { font-size: 16px; font-weight: 600; margin-bottom: 18px;
+                    border-left: 4px solid #ff2442; padding-left: 10px; color: #222; }
+
+  /* 周统计卡片 */
+  .weeks-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; }
+  .week-card { background: #fff9fa; border-radius: 12px; padding: 18px; border: 1px solid #ffe0e5; }
+  .week-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .week-label { font-size: 13px; font-weight: 600; }
+  .week-count { background: #ffe0e5; color: #ff2442; padding: 2px 8px; border-radius: 8px; font-size: 11px; }
+  .week-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px; }
+  .stat-item { text-align: center; }
+  .stat-value { font-size: 16px; font-weight: 700; color: #ff2442; display: block; }
+  .stat-label { font-size: 11px; color: #999; }
+  .week-avg { font-size: 11px; color: #888; display: flex; justify-content: space-around; }
+
+  /* 笔记详情表 */
+  .week-section { margin-bottom: 20px; }
+  .week-section-header { display: flex; justify-content: space-between; align-items: center;
+                           margin-bottom: 12px; padding-bottom: 10px; border-bottom: 2px solid #ffe0e5; }
+  .week-title { font-size: 14px; font-weight: 600; }
+  .week-summary { font-size: 12px; color: #ff2442; }
+  table.notes-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: #fff5f7; color: #ff2442; font-weight: 600; padding: 10px 10px;
+       text-align: left; border-bottom: 2px solid #ffe0e5; white-space: nowrap; }
+  td { padding: 10px 10px; border-bottom: 1px solid #f5f5f5; vertical-align: middle; }
+  tr:hover td { background: #fff9fa; }
+  .note-title { max-width: 280px; color: #333; line-height: 1.4; }
+  .rank { font-size: 15px; text-align: center; }
+  .num { color: #555; text-align: right; white-space: nowrap; }
+  .date { color: #aaa; font-size: 12px; white-space: nowrap; }
+
+  /* 互动率颜色 */
+  .eng-high { color: #22c55e; font-weight: 700; }
+  .eng-mid  { color: #f59e0b; font-weight: 600; }
+  .eng-low  { color: #94a3b8; }
+
+  /* 涨势标签 */
+  .tag { font-size: 11px; padding: 2px 8px; border-radius: 8px; white-space: nowrap; }
+  .tag-hot  { background: #fff1f0; color: #ef4444; }
+  .tag-up   { background: #f0fdf4; color: #16a34a; }
+  .tag-slow { background: #fefce8; color: #ca8a04; }
+  .tag-flat { background: #f1f5f9; color: #94a3b8; }
+  .tag-new  { background: #eff6ff; color: #3b82f6; }
+
+  /* 横向对比进度条 */
+  .bar-wrap { background: #f1f5f9; border-radius: 4px; height: 6px; min-width: 80px; margin-bottom: 3px; }
+  .bar { background: linear-gradient(90deg, #ff2442, #ff6b81); border-radius: 4px; height: 6px; }
+  .bar-num { font-size: 12px; color: #666; }
+
+  /* 内容诊断 */
+  .diag-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .diag-card { display: flex; gap: 14px; align-items: flex-start; padding: 16px;
+                border-radius: 12px; }
+  .diag-best  { background: #f0fdf4; border: 1px solid #bbf7d0; }
+  .diag-worst { background: #fef9c3; border: 1px solid #fde68a; }
+  .diag-icon { font-size: 24px; }
+  .diag-label { font-size: 11px; color: #888; margin-bottom: 4px; }
+  .diag-title { font-size: 13px; font-weight: 600; color: #333; margin-bottom: 4px; }
+  .diag-meta  { font-size: 12px; color: #888; }
+  .diag-stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 16px; }
+  .diag-stat-item { text-align: center; background: #f8fafc; border-radius: 10px; padding: 12px 8px; }
+  .diag-stat-label { font-size: 11px; color: #999; display: block; margin-bottom: 5px; }
+  .diag-stat-value { font-size: 18px; font-weight: 700; }
+  .diag-insight { background: #fff7f0; border-radius: 10px; padding: 14px 16px; }
+  .insight-row { font-size: 13px; line-height: 1.8; color: #555; }
+
+  .no-data { text-align: center; color: #bbb; padding: 40px; font-size: 14px; }
+  .footer { text-align: center; font-size: 12px; color: #bbb; padding: 20px 0 40px; }
+
+  /* 选题建议 */
+  .suggest-section { margin-top: 20px; }
+  .suggest-header { font-size: 14px; font-weight: 700; color: #ff2442; margin-bottom: 14px;
+                     padding-bottom: 10px; border-bottom: 2px solid #ffe0e5; }
+  .suggest-list { display: flex; flex-direction: column; gap: 12px; }
+  .suggest-item { display: flex; gap: 14px; align-items: flex-start;
+                   background: #fafafa; border-radius: 12px; padding: 14px 16px;
+                   border: 1px solid #f0f0f0; transition: box-shadow 0.2s; }
+  .suggest-item:hover { box-shadow: 0 2px 12px rgba(255,36,66,0.08); border-color: #ffe0e5; }
+  .suggest-num { min-width: 28px; height: 28px; border-radius: 50%;
+                  background: linear-gradient(135deg, #ff2442, #ff6b81);
+                  color: white; font-size: 13px; font-weight: 700;
+                  display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .suggest-body { flex: 1; }
+  .suggest-title-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }
+  .suggest-title { font-size: 14px; font-weight: 600; color: #222; line-height: 1.4; }
+  .suggest-reason { font-size: 12px; color: #666; line-height: 1.7; }
+
+  @media (max-width: 768px) {
+    .overview { grid-template-columns: repeat(2, 1fr); }
+    .weeks-grid { grid-template-columns: 1fr; }
+    .diag-cards { grid-template-columns: 1fr; }
+    .diag-stats { grid-template-columns: repeat(2, 1fr); }
+    .header { padding: 24px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🌸 小红书运营周报</h1>
+  <p>2026-04-17 &nbsp;|&nbsp; 统计范围：近4周 &nbsp;|&nbsp; 采集：2026-04-17 12:18:28</p>
+</div>
+
+<div class="container">
+
+  <!-- 概览 -->
+  <div class="overview">
+    <div class="overview-item"><div class="value">3</div><div class="label">发布笔记</div></div>
+    <div class="overview-item"><div class="value">323</div><div class="label">总浏览</div></div>
+    <div class="overview-item"><div class="value">9</div><div class="label">总点赞</div></div>
+    <div class="overview-item"><div class="value">0</div><div class="label">总收藏</div></div>
+    <div class="overview-item"><div class="value eng-mid">3.4%</div><div class="label">综合互动率</div></div>
+  </div>
+
+  <!-- 按周统计 -->
+  <div class="section">
+    <div class="section-title">📊 按周统计</div>
+    <div class="weeks-grid">
+        <div class="week-card">
+            <div class="week-header">
+                <span class="week-label">📅 04/06 - 04/12</span>
+                <span class="week-count">2 篇</span>
+            </div>
+            <div class="week-stats">
+                <div class="stat-item"><span class="stat-value">280</span><span class="stat-label">浏览</span></div>
+                <div class="stat-item"><span class="stat-value">6</span><span class="stat-label">点赞</span></div>
+                <div class="stat-item"><span class="stat-value">0</span><span class="stat-label">收藏</span></div>
+                <div class="stat-item"><span class="stat-value">2</span><span class="stat-label">评论</span></div>
+            </div>
+            <div class="week-avg">
+                <span>篇均浏览 140</span>
+                <span>互动率 2.9%</span>
+            </div>
+        </div>
+        <div class="week-card">
+            <div class="week-header">
+                <span class="week-label">📅 04/13 - 04/19</span>
+                <span class="week-count">1 篇</span>
+            </div>
+            <div class="week-stats">
+                <div class="stat-item"><span class="stat-value">43</span><span class="stat-label">浏览</span></div>
+                <div class="stat-item"><span class="stat-value">3</span><span class="stat-label">点赞</span></div>
+                <div class="stat-item"><span class="stat-value">0</span><span class="stat-label">收藏</span></div>
+                <div class="stat-item"><span class="stat-value">0</span><span class="stat-label">评论</span></div>
+            </div>
+            <div class="week-avg">
+                <span>篇均浏览 43</span>
+                <span>互动率 7.0%</span>
+            </div>
+        </div></div>
+  </div>
+
+  <!-- 横向对比 -->
+  <div class="section">
+    <div class="section-title">🏆 笔记横向对比（按互动率排序）</div>
+    
+    <table class="notes-table">
+        <thead><tr>
+            <th style="width:40px">排名</th>
+            <th>标题</th>
+            <th>浏览量</th>
+            <th style="text-align:right">点赞</th>
+            <th style="text-align:right">收藏</th>
+            <th style="text-align:right">互动率</th>
+            <th>发布时间</th>
+        </tr></thead>
+        <tbody>
+        <tr>
+            <td class="rank">🥇</td>
+            <td class="note-title">晚上总醒，可能晚餐吃错，营养师的助眠食谱</td>
+            <td>
+                <div class="bar-wrap"><div class="bar" style="width:22%"></div></div>
+                <span class="bar-num">43</span>
+            </td>
+            <td class="num">3</td>
+            <td class="num">0</td>
+            <td class="num"><span class="eng-high">7.0%</span></td>
+            <td class="date">发布 5 天</td>
+        </tr>
+        <tr>
+            <td class="rank">🥈</td>
+            <td class="note-title">脸色暗沉？可能是脾胃不和导致，3个调理法</td>
+            <td>
+                <div class="bar-wrap"><div class="bar" style="width:100%"></div></div>
+                <span class="bar-num">194</span>
+            </td>
+            <td class="num">5</td>
+            <td class="num">0</td>
+            <td class="num"><span class="eng-mid">3.6%</span></td>
+            <td class="date">发布 11 天</td>
+        </tr>
+        <tr>
+            <td class="rank">🥉</td>
+            <td class="note-title">一人掌管全家胃：如何给老人控糖给孩子补脑</td>
+            <td>
+                <div class="bar-wrap"><div class="bar" style="width:44%"></div></div>
+                <span class="bar-num">86</span>
+            </td>
+            <td class="num">1</td>
+            <td class="num">0</td>
+            <td class="num"><span class="eng-low">1.2%</span></td>
+            <td class="date">发布 8 天</td>
+        </tr></tbody>
+    </table>
+  </div>
+
+  <!-- 内容诊断 -->
+  <div class="section">
+    <div class="section-title">🔍 内容诊断 & 选题建议</div>
+    
+    <div class="diag-cards">
+        
+    <div class="diag-card diag-best">
+        <div class="diag-icon">🏆</div>
+        <div class="diag-body">
+            <div class="diag-label">表现最佳</div>
+            <div class="diag-title">《晚上总醒，可能晚餐吃错，营养师的助眠食谱》</div>
+            <div class="diag-meta">互动率 7.0% · 浏览 43 · 时长 158s</div>
+        </div>
+    </div>
+        
+    <div class="diag-card diag-worst">
+        <div class="diag-icon">⚠️</div>
+        <div class="diag-body">
+            <div class="diag-label">待提升</div>
+            <div class="diag-title">《一人掌管全家胃：如何给老人控糖给孩子补脑》</div>
+            <div class="diag-meta">互动率 1.2% · 浏览 86 · 时长 215s</div>
+        </div>
+    </div>
+    </div>
+    <div class="diag-stats">
+        <div class="diag-stat-item">
+            <span class="diag-stat-label">平均互动率</span>
+            <span class="diag-stat-value eng-mid">3.9%</span>
+        </div>
+        <div class="diag-stat-item">
+            <span class="diag-stat-label">篇均浏览</span>
+            <span class="diag-stat-value">107</span>
+        </div>
+        <div class="diag-stat-item">
+            <span class="diag-stat-label">点赞率</span>
+            <span class="diag-stat-value">2.8%</span>
+        </div>
+        <div class="diag-stat-item">
+            <span class="diag-stat-label">收藏率</span>
+            <span class="diag-stat-value">0.0%</span>
+        </div>
+        <div class="diag-stat-item">
+            <span class="diag-stat-label">平均视频时长</span>
+            <span class="diag-stat-value">198s</span>
+        </div>
+    </div>
+    <div class="diag-insight">
+        <div class="insight-row">📊 <strong>数据信号：</strong>点赞率 > 收藏率，情感共鸣型内容表现好</div>
+        <div class="insight-row">💡 <strong>内容策略：</strong>可以在实用内容中加入更多故事感和情感共鸣点</div>
+    </div>
+
+    <div class="suggest-section">
+        <div class="suggest-header">🎯 本周选题推荐（10条）</div>
+        <div class="suggest-list">
+            
+        <div class="suggest-item">
+            <div class="suggest-num">1</div>
+            <div class="suggest-body">
+                <div class="suggest-title-row">
+                    <span class="suggest-title">「养胃必备的5种白色食物（图解版）」</span>
+                    <span class="tag tag-hot">复刻爆款</span>
+                </div>
+                <div class="suggest-reason">📌 「养胃食物大全」是你账号浏览量最高的笔记（7.9w），养胃话题已验证。图解/清单形式收藏率高，可直接复刻方向。</div>
+            </div>
+        </div>
+        <div class="suggest-item">
+            <div class="suggest-num">2</div>
+            <div class="suggest-body">
+                <div class="suggest-title-row">
+                    <span class="suggest-title">「胃不好的人，这3种早餐千万别吃」</span>
+                    <span class="tag tag-up">高点击结构</span>
+                </div>
+                <div class="suggest-reason">📌 「不能吃什么」的否定句式比「应该吃什么」点击率更高，制造焦虑感后给解决方案，是养胃话题的高互动结构。</div>
+            </div>
+        </div>
+        <div class="suggest-item">
+            <div class="suggest-num">3</div>
+            <div class="suggest-body">
+                <div class="suggest-title-row">
+                    <span class="suggest-title">「家里有老人，这5种营养品真的别乱买」</span>
+                    <span class="tag tag-hot">复刻爆款</span>
+                </div>
+                <div class="suggest-reason">📌 你的「老年人营养品」笔记浏览5w+，且「别买XX」类标题在营养健康类有稳定高完播率，用户会存下来作为购物参考。</div>
+            </div>
+        </div>
+        <div class="suggest-item">
+            <div class="suggest-num">4</div>
+            <div class="suggest-body">
+                <div class="suggest-title-row">
+                    <span class="suggest-title">「我是营养师，但我也偷偷爱吃这些「垃圾食品」」</span>
+                    <span class="tag tag-slow">情感共鸣</span>
+                </div>
+                <div class="suggest-reason">📌 你的点赞率 > 收藏率，说明情感共鸣型内容更受欢迎。营养师也是普通人，反差感话题容易引发评论和点赞。</div>
+            </div>
+        </div>
+        <div class="suggest-item">
+            <div class="suggest-num">5</div>
+            <div class="suggest-body">
+                <div class="suggest-title-row">
+                    <span class="suggest-title">「真的不用吃保健品！这5种食物比营养素片更管用」</span>
+                    <span class="tag tag-hot">通用爆款结构</span>
+                </div>
+                <div class="suggest-reason">📌 「食物代替保健品」话题能同时命中「节省钱」和「健康」两个用户痛点，打击智商税类内容在营养健康赛道一贯高流量。</div>
+            </div>
+        </div>
+        <div class="suggest-item">
+            <div class="suggest-num">6</div>
+            <div class="suggest-body">
+                <div class="suggest-title-row">
+                    <span class="suggest-title">「一人掌管全家饮食：老人控糖+孩子补脑+自己减脂怎么兼顾」</span>
+                    <span class="tag tag-slow">已验证方向</span>
+                </div>
+                <div class="suggest-reason">📌 你已有同话题笔记「一人掌管全家胃」，数据还在积累中。这个选题直接把痛点放标题里，搜索流量更精准，完播率预计更高。</div>
+            </div>
+        </div>
+        <div class="suggest-item">
+            <div class="suggest-num">7</div>
+            <div class="suggest-body">
+                <div class="suggest-title-row">
+                    <span class="suggest-title">「减脂期最容易踩的5个饮食误区（营养师来破解）」</span>
+                    <span class="tag tag-hot">流量热词</span>
+                </div>
+                <div class="suggest-reason">📌 减脂是小红书全年热搜话题，「误区揭秘」结构制造认知冲突，完播率和分享率都高。营养师身份可做知识增信，与泛娱乐账号形成差异。</div>
+            </div>
+        </div>
+        <div class="suggest-item">
+            <div class="suggest-num">8</div>
+            <div class="suggest-body">
+                <div class="suggest-title-row">
+                    <span class="suggest-title">「口腔溃疡反复发作？可能是身体这个信号，不只是上火」</span>
+                    <span class="tag tag-slow">搜索流量</span>
+                </div>
+                <div class="suggest-reason">📌 你的「B族维生素+口腔溃疡」笔记显示用户对「症状背后原因」感兴趣。用「不只是上火」制造认知反差，搜索流量精准，评论区讨论度高。</div>
+            </div>
+        </div>
+        <div class="suggest-item">
+            <div class="suggest-num">9</div>
+            <div class="suggest-body">
+                <div class="suggest-title-row">
+                    <span class="suggest-title">「夏天吃冰有多伤脾胃？中医+营养师联合分析」</span>
+                    <span class="tag tag-up">季节热点</span>
+                </div>
+                <div class="suggest-reason">📌 季节性内容在当季流量大（夏天即将到来），中医+营养师跨界合作类内容在小红书有天然传播优势，能触达两个圈子的用户。</div>
+            </div>
+        </div>
+        <div class="suggest-item">
+            <div class="suggest-num">10</div>
+            <div class="suggest-body">
+                <div class="suggest-title-row">
+                    <span class="suggest-title">「铁锅炒菜真的能补铁吗？一次说清楚」</span>
+                    <span class="tag tag-slow">辟谣/科普</span>
+                </div>
+                <div class="suggest-reason">📌 「XX真的有用吗」是营养科普的经典选题结构，能截获有疑问的搜索流量，且用户分享欲强（想发给家人辟谣）。</div>
+            </div>
+        </div>
+        </div>
+    </div>
+  </div>
+
+  <!-- 按篇详情 -->
+  <div class="section">
+    <div class="section-title">📝 每篇详情（含互动率 & 涨势）</div>
+    
+        <div class="week-section">
+            <div class="week-section-header">
+                <span class="week-title">📆 04/13 - 04/19</span>
+                <span class="week-summary">共 1 篇 | 浏览 43 | 点赞 3</span>
+            </div>
+            <table class="notes-table">
+                <thead><tr>
+                    <th>标题</th>
+                    <th style="text-align:right">浏览</th>
+                    <th style="text-align:right">点赞</th>
+                    <th style="text-align:right">收藏</th>
+                    <th style="text-align:right">评论</th>
+                    <th style="text-align:right">转发</th>
+                    <th style="text-align:right">互动率</th>
+                    <th>涨势</th>
+                    <th>发布</th>
+                    <th>时长</th>
+                </tr></thead>
+                <tbody>
+            <tr>
+                <td class="note-title">晚上总醒，可能晚餐吃错，营养师的助眠食谱</td>
+                <td class="num">43</td>
+                <td class="num">3</td>
+                <td class="num">0</td>
+                <td class="num">0</td>
+                <td class="num">0</td>
+                <td class="num"><span class="eng-high">7.0%</span></td>
+                <td><span class="tag tag-flat">💤 趋于平稳</span></td>
+                <td class="date">04-15</td>
+                <td class="date">158s</td>
+            </tr></tbody>
+            </table>
+        </div>
+        <div class="week-section">
+            <div class="week-section-header">
+                <span class="week-title">📆 04/06 - 04/12</span>
+                <span class="week-summary">共 2 篇 | 浏览 280 | 点赞 6</span>
+            </div>
+            <table class="notes-table">
+                <thead><tr>
+                    <th>标题</th>
+                    <th style="text-align:right">浏览</th>
+                    <th style="text-align:right">点赞</th>
+                    <th style="text-align:right">收藏</th>
+                    <th style="text-align:right">评论</th>
+                    <th style="text-align:right">转发</th>
+                    <th style="text-align:right">互动率</th>
+                    <th>涨势</th>
+                    <th>发布</th>
+                    <th>时长</th>
+                </tr></thead>
+                <tbody>
+            <tr>
+                <td class="note-title">一人掌管全家胃：如何给老人控糖给孩子补脑</td>
+                <td class="num">86</td>
+                <td class="num">1</td>
+                <td class="num">0</td>
+                <td class="num">0</td>
+                <td class="num">0</td>
+                <td class="num"><span class="eng-low">1.2%</span></td>
+                <td><span class="tag tag-flat">💤 趋于平稳</span></td>
+                <td class="date">04-12</td>
+                <td class="date">215s</td>
+            </tr>
+            <tr>
+                <td class="note-title">脸色暗沉？可能是脾胃不和导致，3个调理法</td>
+                <td class="num">194</td>
+                <td class="num">5</td>
+                <td class="num">0</td>
+                <td class="num">2</td>
+                <td class="num">0</td>
+                <td class="num"><span class="eng-mid">3.6%</span></td>
+                <td><span class="tag tag-flat">💤 趋于平稳</span></td>
+                <td class="date">04-09</td>
+                <td class="date">222s</td>
+            </tr></tbody>
+            </table>
+        </div>
+  </div>
+
+</div>
+
+<div class="footer">由 WorkBuddy 自动生成 · 2026-04-17 12:18:28</div>
+</body>
+</html>
